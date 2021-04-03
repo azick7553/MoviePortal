@@ -1,0 +1,43 @@
+﻿@model MoviePortal.Models.Account.RegisterDTO
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">
+                    Регистрация
+                </span>
+            </div>
+            <div class="card-body">
+                <form action="Register" method="post">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="form-group row">
+                        <label asp-for="UserName" class="col-md-4"></label>
+                        <input asp-for="UserName" class="col-md-4 form-control" />
+                        <span asp-validation-for="UserName" />
+                    </div>
+                    <div class="form-group row">
+                        <label asp-for="Email" class="col-md-4"></label>
+                        <input asp-for="Email" class="col-md-4 form-control" />
+                        <span asp-validation-for="Email" />
+                    </div>
+                    <div class="form-group row">
+                        <label asp-for="Password" class="col-md-4"></label>
+                        <input asp-for="Password" class="col-md-4 form-control" />
+                        <span asp-validation-for="Password" />
+                    </div>
+                    <div class="form-group row">
+                        <label asp-for="ConfirmPassword" class="col-md-4"></label>
+                        <input asp-for="ConfirmPassword" class="col-md-4 form-control" />
+                        <span asp-validation-for="ConfirmPassword" />
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md">
+                            <input style="float:right" type="submit" value="Регистрация" class="btn btn-success" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
