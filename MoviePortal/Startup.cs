@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MoviePortal.Context;
+using MoviePortal.Models.Account;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,11 +35,11 @@ namespace MoviePortal
                 option.UseSqlServer(Configuration.GetConnectionString("Default")).UseLazyLoadingProxies();
             });
 
-            services.AddIdentity<IdentityUser, IdentityRole>(option =>
+            services.AddIdentity<User, IdentityRole>(option =>
             {
                 option.User.AllowedUserNameCharacters = null;
             }).AddRoleManager<RoleManager<IdentityRole>>()
-              .AddUserManager<UserManager<IdentityUser>>()
+              .AddUserManager<UserManager<User>>()
               .AddEntityFrameworkStores<MoviePortalContext>()
               .AddDefaultTokenProviders();
 

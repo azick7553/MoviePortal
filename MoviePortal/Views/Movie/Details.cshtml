@@ -1,0 +1,19 @@
+﻿@model MoviePortal.Models.Movy.MovieDTO
+@{
+    ViewData["Title"] = Model.Title + " Details";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-2">Title</div>
+            <div class="col-md-6">@Model.Title</div>
+        </div>
+        <div class="row">
+            <div class="col-md-2">Image</div>
+            <div class="col-md-6">
+                <img src="~/images/@Model.ImageName" class="img-thumbnail" />
+            </div>
+        </div>
+    </div>
+</div>

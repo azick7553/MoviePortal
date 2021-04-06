@@ -1,0 +1,42 @@
+﻿@model MoviePortal.Models.Movy.MovieDTO
+@{ 
+    ViewData["Title"] = "Add new movie";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            Add new movie
+        </div>
+    </div>
+    <div class="card-body">
+        <form action="Create" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="All"></div>
+            <div class="form-group">
+                <label asp-for="Title"></label>
+                <input asp-for="Title" class="form-control">
+            </div>
+            <div class="form-group">
+                <label asp-for="Description"></label>
+                <input asp-for="Description" class="form-control">
+            </div>
+            <div class="form-group">
+                <label asp-for="Director"></label>
+                <input asp-for="Director" class="form-control">
+            </div>
+            <div class="form-group">
+                <label asp-for="ReleaseDate"></label>
+                <input asp-for="ReleaseDate" type="date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label asp-for="CategoryId"></label>
+                <select asp-for="CategoryId" asp-items="Model.Categories" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageFile"></label>
+                <input asp-for="ImageFile" type="file" accept="image/*" class="form-control-file">
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</div>
