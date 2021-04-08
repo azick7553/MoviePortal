@@ -1,0 +1,33 @@
+﻿@model List<MoviePortal.Models.Movy.MovieDTO>
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var movie in Model)
+                {
+                    var routeData = new Dictionary<string, string>
+                    {
+                        {"id", movie.Id.ToString() }
+                    };
+                    <tr>
+                        <td>@movie.Id</td>
+                        <td>@movie.Title</td>
+                        <td><a  asp-action="Edit" asp-controller="Movie" asp-all-route-data="routeData" class="btn btn-sm btn-dark">Edit</a> <a href="#" class="btn btn-sm btn-danger">Delete</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -33,7 +33,7 @@ namespace MoviePortal.Controllers
                 throw new Exception("Movie with this id not found");
             }
 
-            var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p=> p.Id.Equals(Guid.Parse(id)));
+            var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(id)));
 
             if (movie == null)
             {
@@ -59,8 +59,49 @@ namespace MoviePortal.Controllers
             return View(movieDTO);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
-        [Authorize]
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction("GetMovies");
+            }
+
+            if (System.IO.File.Exists(""))
+            {
+                System.IO.File.Delete("");
+            }
+
+
+            var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(id)));
+
+            if (movie == null)
+            {
+                return RedirectToAction("GetMovies");
+            }
+
+            var movieDto = new MovieDTO
+            {
+                CategoryId = movie.CategoryId,
+                CategoryName = movie.MovieCategory.Name,
+                Description = movie.Description,
+                Director = movie.Director,
+                Id = movie.Id,
+                ImageName = movie.Image,
+                InsertDateTime = movie.InsertDateTime,
+                InsertUserId = movie.InsertUserId,
+                ReleaseDate = movie.ReleaseDate,
+                Title = movie.Title,
+                UpdateDate = movie.UpdateDate,
+                UserName = movie.User.UserName,
+                Categories = await _moviePortalContext.MovieCategories.Select(p => new SelectListItem { Text = p.Name, Value = p.Id.ToString() }).ToListAsync()
+            };
+            return View(movieDto);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             var movieDTO = new MovieDTO();
@@ -75,15 +116,15 @@ namespace MoviePortal.Controllers
 
             return View(movieDTO);
         }
-        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create (MovieDTO model)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Create(MovieDTO model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
-            
+
             string finalFileName = null;
 
             if (model.ImageFile != null)
@@ -98,6 +139,11 @@ namespace MoviePortal.Controllers
                 {
                     await model.ImageFile.CopyToAsync(fileStream);
                 }
+            }
+
+            if (model.Id != null)
+            {
+
             }
 
             //Current user id
@@ -121,6 +167,36 @@ namespace MoviePortal.Controllers
             await _moviePortalContext.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult Download(string id)
+        {
+            return View();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetMovies()
+        {
+            var movies = await _moviePortalContext.Movies.Select(m => new MovieDTO
+            {
+                CategoryId = m.CategoryId,
+                CategoryName = m.MovieCategory.Name,
+                Description = m.Description,
+                Director = m.Director,
+                Id = m.Id,
+                ImageName = m.Image,
+                InsertDateTime = m.InsertDateTime,
+                InsertUserId = m.InsertUserId,
+                ReleaseDate = m.ReleaseDate,
+                Title = m.Title,
+                UpdateDate = m.UpdateDate,
+                UserId = m.User.Id,
+                UserName = m.User.UserName
+            }).ToListAsync();
+            return View(movies);
         }
     }
 }

@@ -27,6 +27,7 @@
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <a asp-action="Create" asp-controller="Movie" class="dropdown-item">Add</a>
+                                <a asp-action="GetMovies" asp-controller="Movie" class="dropdown-item">List</a>
                             </div>
                         </li>
                         @if (User.Identity.IsAuthenticated)

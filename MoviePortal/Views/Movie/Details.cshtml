@@ -1,18 +1,36 @@
 ﻿@model MoviePortal.Models.Movy.MovieDTO
 @{
     ViewData["Title"] = Model.Title + " Details";
+    var downloadRoutData = new Dictionary<string, string>
+    {
+        { "id", Model.Id.ToString() }
+    };
 }
-
+<style>
+    .bold-text{
+        font-weight:bold;
+        font-size:18px
+    }
+</style>
 <div class="card">
     <div class="card-body">
         <div class="row">
-            <div class="col-md-2">Title</div>
-            <div class="col-md-6">@Model.Title</div>
+            <div class="col-md-4">
+                <img src="~/images/@Model.ImageName" style="height:400px" class="img-thumbnail" />
+            </div>
+            <div class="col-md">
+                <div class="">
+                    <span style="font-size:26px" class="bold-text">@Model.Title</span> <br />
+                    <span class="bold-text">Release year:</span>@Model.ReleaseDate.ToString("yyyy");<br />
+                    <span class="bold-text">Description:</span> @Model.Description <br />
+                </div>
+            </div>
         </div>
+    </div>
+    <div class="card-footer">
         <div class="row">
-            <div class="col-md-2">Image</div>
-            <div class="col-md-6">
-                <img src="~/images/@Model.ImageName" class="img-thumbnail" />
+            <div class="col">
+                <a asp-action="Download" asp-controller="Movie" asp-all-route-data="downloadRoutData" style="float:right" class="btn btn-link">Download</a>
             </div>
         </div>
     </div>

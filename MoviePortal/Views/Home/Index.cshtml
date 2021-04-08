@@ -1,8 +1,33 @@
-﻿@{
+﻿@model List<MoviePortal.Models.Movy.MovieDTO>
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .col-md {
+        margin-bottom: 25px !important;
+    }
+</style>
+
+<div class="row">
+    @foreach (var movie in Model)
+    {
+        var routeDate = new Dictionary<string, string>()
+        {
+            { "id", movie.Id.ToString() },
+            { "categoryId", movie.CategoryId.ToString() }
+        };
+
+        <div class="col-md">
+            <div class="card" style="width: 18rem; padding:10px">
+                <img src="~/images/@movie.ImageName" style="width:100px; height:100px; align-self:center" class="card-img-top" alt="@movie.ImageName">
+                <div class="card-body">
+                    <h5 class="card-title">@movie.Title</h5>
+                    <p class="card-text">@movie.Description</p>
+                    <a asp-action="Details" asp-controller="Movie" asp-all-route-data="routeDate" class="btn btn-primary">Download</a>
+                    @*<a href="~/Movie/Details/?id=@movie.Id.ToString()&category=@movie.CategoryId" class="btn btn-dark">Download</a>*@
+                </div>
+            </div>
+        </div>
+    }
 </div>
