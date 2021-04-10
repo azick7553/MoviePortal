@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -68,12 +69,6 @@ namespace MoviePortal.Controllers
                 return RedirectToAction("GetMovies");
             }
 
-            if (System.IO.File.Exists(""))
-            {
-                System.IO.File.Delete("");
-            }
-
-
             var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(id)));
 
             if (movie == null)
@@ -98,6 +93,119 @@ namespace MoviePortal.Controllers
                 Categories = await _moviePortalContext.MovieCategories.Select(p => new SelectListItem { Text = p.Name, Value = p.Id.ToString() }).ToListAsync()
             };
             return View(movieDto);
+        }
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteImage(string imageName, string movieId)
+        {
+            if (string.IsNullOrEmpty(imageName) || string.IsNullOrEmpty(movieId))
+            {
+                return BadRequest();
+            }
+
+            var result = await DeleteFile(imageName, movieId);
+
+            if (!result)
+            {
+                return BadRequest();
+            }
+
+            return Ok("Success");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> Edit(MovieDTO model)
+        {
+            var fileName = "";
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (model.ImageFile != null)
+            {
+                await DeleteFile(model.ImageName, model.Id.ToString());
+                fileName = await CopyFile(model.ImageFile);
+            }
+
+            var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p => p.Id.Equals(model.Id));
+
+            if (movie == null)
+            {
+                throw new Exception($"Movie with id: {model.Id} not found");
+            }
+
+            movie.Image = string.IsNullOrEmpty(fileName) ? movie.Image : fileName;
+            movie.ReleaseDate = model.ReleaseDate;
+            movie.Title = model.Title;
+            movie.UpdateDate = DateTime.Now;
+            movie.CategoryId = model.CategoryId;
+            movie.Description = model.Description;
+            movie.Director = model.Director;
+
+            await _moviePortalContext.SaveChangesAsync();
+
+            return RedirectToAction("GetMovies");
+        }
+
+        [NonAction]
+        private async Task<bool> DeleteFile(string imageName, string movieId)
+        {
+            if (string.IsNullOrEmpty(imageName))
+            {
+                return false;
+            }
+            var rootPath = _webHostEnvironment.WebRootPath;
+            var finalfilePath = Path.Combine(rootPath, "images", imageName);
+
+            if (!System.IO.File.Exists(finalfilePath))
+            {
+                return false;
+            }
+
+            await Task.Run(() =>
+            {
+                System.IO.File.Delete(finalfilePath);
+            });
+
+            var parsedMovieIdResult = Guid.TryParse(movieId, out var parsedMovieId);
+
+            if (!parsedMovieIdResult)
+            {
+                return false; ;
+            }
+
+            var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p => p.Id.Equals(parsedMovieId));
+
+            if (movie == null)
+            {
+                return false;
+            }
+
+            movie.Image = null;
+
+            await _moviePortalContext.SaveChangesAsync();
+
+            return true;
+        }
+
+        [Authorize(Roles = "Admin")]
+        [NonAction]
+        private async Task<string> CopyFile(IFormFile imageFile)
+        {
+            if (imageFile == null) return null;
+
+            var rootPath = _webHostEnvironment.WebRootPath;
+            var filename = Path.GetFileNameWithoutExtension(imageFile.FileName); //02animalpicture
+            var fileExtension = Path.GetExtension(imageFile.FileName); //.jpeg
+            var finalFileName = $"{filename}_{DateTime.Now.ToString("yyMMddHHmmssff")}{fileExtension}";
+            var filePath = Path.Combine(rootPath, "images", finalFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await imageFile.CopyToAsync(fileStream);
+            }
+            return finalFileName;
         }
 
         [HttpGet]
@@ -129,16 +237,7 @@ namespace MoviePortal.Controllers
 
             if (model.ImageFile != null)
             {
-                var rootPath = _webHostEnvironment.WebRootPath;
-                var filename = Path.GetFileNameWithoutExtension(model.ImageFile.FileName);
-                var fileExtension = Path.GetExtension(model.ImageFile.FileName);
-                finalFileName = $"{filename}_{DateTime.Now.ToString("yyMMddHHmmssff")}{fileExtension}";
-                var filePath = Path.Combine(rootPath, "images", finalFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await model.ImageFile.CopyToAsync(fileStream);
-                }
+                finalFileName = await CopyFile(model.ImageFile);
             }
 
             if (model.Id != null)

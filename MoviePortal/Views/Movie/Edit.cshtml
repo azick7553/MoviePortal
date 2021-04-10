@@ -10,7 +10,10 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
+
+            <input type="hidden" asp-for="ImageName" />
+
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
@@ -44,21 +47,61 @@
                 <span asp-validation-for="InsertDateTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ImageFile" class="control-label"></label>
-                <input asp-for="ImageFile" class="form-control" />
-                <span asp-validation-for="ImageFile" class="text-danger"></span>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="ImageFile" class="control-label"></label>
+                        <input asp-for="ImageFile" class="form-control-file" />
+                        <span asp-validation-for="ImageFile" class="text-danger"></span>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col">
+                        <img id="movie-img" src="~/images/@Model.ImageName" alt="@Model.ImageName" style="max-height:100px" />
+                    </div>
+                    <div>
+                        <button data-movie-id="@Model.Id" data-image-name="@Model.ImageName" id="remove-img-btn" class="btn btn-sm btn-danger">Delete image</button>
+                    </div>
+                </div>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-success" />
+                <a asp-action="GetMovies" asp-controller="Movie" class="btn btn-primary">Back</a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(() => {
+            $('#remove-img-btn').click((e) => {
+
+                e.preventDefault();
+
+                const imageName = $(e.currentTarget).data('image-name');
+                const movieId = $(e.currentTarget).data('movie-id');
+
+                $.ajax({
+                    url: '/Movie/DeleteImage/',
+                    data: { imageName: imageName, movieId: movieId },
+                    success: (result) => {
+                        if (!result) {
+                            console.log('bad');
+                            return;
+                        }
+
+                        $('#movie-img').removeAttr('src');
+
+                        console.log('ok');
+                    }
+                }).fail((error) => {
+                    console.error(error);
+                });
+
+            })
+        });
+    </script>
 }
