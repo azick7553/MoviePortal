@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MoviePortal.Context;
 using MoviePortal.Models.Account;
+using MoviePortal.Services;
+using MoviePortal.Services.Movie;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,6 +64,11 @@ namespace MoviePortal
                 option.ExpireTimeSpan = TimeSpan.FromMinutes(30);
                 option.SlidingExpiration = true;
             });
+
+            //services.AddScoped<MovieService>();
+
+            services.InitServices();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

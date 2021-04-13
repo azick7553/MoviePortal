@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MoviePortal.Context;
+using MoviePortal.Extensions.DateTimeExtensions;
 using MoviePortal.Models.Account;
 using MoviePortal.Models.Movy;
+using MoviePortal.Services.Movie;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,79 +22,30 @@ namespace MoviePortal.Controllers
     {
         private readonly MoviePortalContext _moviePortalContext;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly MovieService _movieService;
 
-        public MovieController(MoviePortalContext moviePortalContext, IWebHostEnvironment webHostEnvironment)
+        public MovieController(
+            MoviePortalContext moviePortalContext, 
+            IWebHostEnvironment webHostEnvironment,
+            MovieService movieService)
         {
             _moviePortalContext = moviePortalContext;
             _webHostEnvironment = webHostEnvironment;
+            _movieService = movieService;
         }
 
         public async Task<IActionResult> Details(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new Exception("Movie with this id not found");
-            }
-
-            var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(id)));
-
-            if (movie == null)
-            {
-                throw new Exception("Movie with this id not found");
-            }
-
-            var movieDTO = new MovieDTO
-            {
-                CategoryId = movie.CategoryId,
-                CategoryName = movie.MovieCategory.Name,
-                Description = movie.Description,
-                Director = movie.Director,
-                Id = movie.Id,
-                ImageName = movie.Image,
-                InsertDateTime = movie.InsertDateTime,
-                InsertUserId = movie.InsertUserId,
-                ReleaseDate = movie.ReleaseDate,
-                Title = movie.Title,
-                UpdateDate = movie.UpdateDate,
-                UserName = movie.User.UserName,
-            };
-
-            return View(movieDTO);
+            var movie = await _movieService.GetById(id);
+            return View(movie);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                return RedirectToAction("GetMovies");
-            }
-
-            var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p => p.Id.Equals(Guid.Parse(id)));
-
-            if (movie == null)
-            {
-                return RedirectToAction("GetMovies");
-            }
-
-            var movieDto = new MovieDTO
-            {
-                CategoryId = movie.CategoryId,
-                CategoryName = movie.MovieCategory.Name,
-                Description = movie.Description,
-                Director = movie.Director,
-                Id = movie.Id,
-                ImageName = movie.Image,
-                InsertDateTime = movie.InsertDateTime,
-                InsertUserId = movie.InsertUserId,
-                ReleaseDate = movie.ReleaseDate,
-                Title = movie.Title,
-                UpdateDate = movie.UpdateDate,
-                UserName = movie.User.UserName,
-                Categories = await _moviePortalContext.MovieCategories.Select(p => new SelectListItem { Text = p.Name, Value = p.Id.ToString() }).ToListAsync()
-            };
-            return View(movieDto);
+            var movie = await _movieService.GetById(id);
+            return View(movie);
         }
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteImage(string imageName, string movieId)
@@ -128,22 +81,7 @@ namespace MoviePortal.Controllers
                 fileName = await CopyFile(model.ImageFile);
             }
 
-            var movie = await _moviePortalContext.Movies.FirstOrDefaultAsync(p => p.Id.Equals(model.Id));
-
-            if (movie == null)
-            {
-                throw new Exception($"Movie with id: {model.Id} not found");
-            }
-
-            movie.Image = string.IsNullOrEmpty(fileName) ? movie.Image : fileName;
-            movie.ReleaseDate = model.ReleaseDate;
-            movie.Title = model.Title;
-            movie.UpdateDate = DateTime.Now;
-            movie.CategoryId = model.CategoryId;
-            movie.Description = model.Description;
-            movie.Director = model.Director;
-
-            await _moviePortalContext.SaveChangesAsync();
+            await _movieService.Update(model, fileName);
 
             return RedirectToAction("GetMovies");
         }
@@ -279,23 +217,16 @@ namespace MoviePortal.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMovies()
         {
-            var movies = await _moviePortalContext.Movies.Select(m => new MovieDTO
-            {
-                CategoryId = m.CategoryId,
-                CategoryName = m.MovieCategory.Name,
-                Description = m.Description,
-                Director = m.Director,
-                Id = m.Id,
-                ImageName = m.Image,
-                InsertDateTime = m.InsertDateTime,
-                InsertUserId = m.InsertUserId,
-                ReleaseDate = m.ReleaseDate,
-                Title = m.Title,
-                UpdateDate = m.UpdateDate,
-                UserId = m.User.Id,
-                UserName = m.User.UserName
-            }).ToListAsync();
+            //var dateString = DateTime.Now.ToStringTajikFormat(DateFormats.Russian);
+
+            var movies = await _movieService.GetAll();
             return View(movies);
         }
     }
+
+    //public enum DateFormats
+    //{
+    //    Tajikistan,
+    //    Russian
+    //}
 }
